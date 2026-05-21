@@ -92,7 +92,7 @@ export const githubFetch = async <T>(
   }
 };
 
-// ─── Parallel Fetcher ─────────────────────────────────────────────────────────
+// Parallel Fetcher
 export const githubFetchParallel = async <T>(
   endpoints: string[],
   concurrency = 5,
@@ -111,10 +111,10 @@ export const githubFetchParallel = async <T>(
   return results;
 };
 
-// ─── Rate Limit Guard ─────────────────────────────────────────────────────────
+// Rate Limit Guard
 
 export function assertRateLimitSafe(minRemaining = 10): void {
-  if (!rateLimitState) return; // no data yet, proceed
+  if (!rateLimitState) return;
 
   if (rateLimitState.remaining < minRemaining) {
     throw new GitHubError({

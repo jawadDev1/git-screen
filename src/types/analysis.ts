@@ -1,3 +1,7 @@
+import { IFetchReposResult } from "@/lib/github/repos";
+import { INormalizedProfile } from "./github";
+import { IFrameworkMap } from "@/lib/github/frameworks";
+
 export type ActivityLevel = "Active" | "Moderate" | "Inactive";
 export type CollaborationProfile = "Team Player" | "Mixed" | "Solo Builder";
 export type ExperienceLevel = "Junior" | "Mid-Level" | "Senior";
@@ -85,4 +89,75 @@ export interface IJDMatchResult {
   breakdown: ISkillMatch[];
   // One-line summary for the report
   summary: string;
+}
+
+export interface IGitHubEvent {
+  id: string;
+  type: string; // "PushEvent" | "PullRequestEvent" | "IssuesEvent" etc.
+  created_at: string;
+  payload: {
+    commits?: { sha: string }[]; // PushEvent
+    action?: string; // PullRequestEvent, IssuesEvent
+    pull_request?: { merged: boolean };
+  };
+}
+
+export interface IActivitySummary {
+  pushesLast30Days: number;
+  pushesLast90Days: number;
+  pullRequestsOpened: number;
+  issuesOpened: number;
+  commitEstimateLast30Days: number; // sum of commits across PushEvents
+  mostActiveDay: string | null; // e.g. "Monday"
+  eventTypes: Record<string, number>; // { PushEvent: 12, PullRequestEvent: 3 }
+}
+
+export interface IGeminiReport {
+  raw: string;
+  sections: {
+    snapshot: string;
+    technicalExpertise: string;
+    workStyle: string;
+    projectQuality: string;
+    strengths: string[];
+    concerns: string[];
+    verdict: string;
+    jdFitAssessment?: string;
+    technicalMatch?: string;
+    roleSuitability?: string;
+    strengthsForRole?: string[];
+    gapsForRole?: string[];
+  };
+  generatedAt: Date;
+  hasJD: boolean;
+}
+
+export type AnalysisStep =
+  | "idle"
+  | "profile"
+  | "repos"
+  | "frameworks"
+  | "activity"
+  | "classifying"
+  | "generating"
+  | "done"
+  | "error";
+
+export interface IAnalysisResult {
+  profile: INormalizedProfile;
+  reposData: IFetchReposResult;
+  frameworkMap: IFrameworkMap;
+  activitySummary: IActivitySummary;
+  classification: ICandidateClassification;
+  score: ICandidateScore;
+  jdMatch: IJDMatchResult | null;
+  report: IGeminiReport;
+}
+
+export interface IAnalysisState {
+  step: AnalysisStep;
+  result: IAnalysisResult | null;
+  error: string | null;
+  // Per-step completion flags — lets UI show checkmarks as steps finish
+  completedSteps: Set<AnalysisStep>;
 }
