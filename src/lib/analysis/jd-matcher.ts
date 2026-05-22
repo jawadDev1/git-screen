@@ -2,7 +2,6 @@ import { IJDMatchResult, INormalizedRepo, ISkillMatch } from "@/types";
 import { IFrameworkMap } from "@/lib/github/frameworks";
 
 // Skill Aliases
-// Normalizes JD variations to a canonical name we can match against.
 const SKILL_ALIASES: Record<string, string> = {
   // JavaScript
   javascript: "JavaScript",
@@ -157,15 +156,13 @@ const STOP_WORDS = new Set([
   "bonus",
 ]);
 
-// JD Skill Extractor
-
 export const extractSkillsFromJD = (jdText: string): string[] => {
   if (!jdText || jdText.trim().length < 20) return [];
 
   const lower = jdText.toLowerCase();
   const found = new Set<string>();
 
-  // 1. Direct alias match — scan for known skill keywords in the JD text
+  // 1. Direct alias match
   for (const [alias, canonical] of Object.entries(SKILL_ALIASES)) {
     // Use word boundary check: the alias must be a standalone term
     const pattern = new RegExp(
@@ -177,7 +174,7 @@ export const extractSkillsFromJD = (jdText: string): string[] => {
     }
   }
 
-  // 2. Token pass — catch any unrecognized capitalized tech terms (e.g. "Kafka", "Elasticsearch")
+  // 2. Token pass
   const tokens = jdText
     .replace(/[^\w\s.#+]/g, " ")
     .split(/\s+/)
@@ -200,16 +197,10 @@ export const extractSkillsFromJD = (jdText: string): string[] => {
 };
 
 // Candidate Data Indexer
-// Builds a fast lookup structure from repo data for cross-referencing
-
 interface ICandidateSkillIndex {
-  // canonical skill name → repos where it appears
   frameworkRepoCount: Record<string, number>;
-  // language name → percentage (e.g. { TypeScript: 60.2 })
   languageBreakdown: Record<string, number>;
-  // all topic strings across all repos, lowercased
   allTopics: Set<string>;
-  // repo names + descriptions, lowercased
   nameDescText: string;
 }
 
@@ -240,15 +231,14 @@ const buildCandidateIndex = (
   };
 };
 
-// ─── Skill Cross-Referencer ───────────────────────────────────────────────────
-
+// Skill Cross-Referencer
 const matchSkill = (
   skill: string,
   index: ICandidateSkillIndex,
 ): ISkillMatch => {
   const skillLower = skill.toLowerCase();
 
-  // 1. Framework map — strongest signal
+  //  Framework map
   const repoCount = index.frameworkRepoCount[skill];
   if (repoCount !== undefined) {
     return {
@@ -258,7 +248,7 @@ const matchSkill = (
     };
   }
 
-  // 2. Language breakdown
+  // Language
   const langMatch = Object.entries(index.languageBreakdown).find(
     ([lang]) => lang.toLowerCase() === skillLower,
   );
@@ -271,7 +261,7 @@ const matchSkill = (
     };
   }
 
-  // 3. Topics
+  // Topics
   const topicKeywords = SKILL_ALIASES[skillLower]
     ? [skillLower]
     : [
@@ -288,7 +278,7 @@ const matchSkill = (
     };
   }
 
-  // 4. Name + description weak signal
+  // Name + description weak signal
   if (
     topicKeywords.some((kw) => index.nameDescText.includes(kw)) ||
     index.nameDescText.includes(skillLower)

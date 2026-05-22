@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 const classNames = {
   span: "inline",
-  h1: "scroll-m-20 text-2xl font-semibold text-primary-text tracking-tight lg:text-5xl lg:leading-[64px] leading-[36px]",
+  h1: "scroll-m-20 text-2xl font-semibold  tracking-tight lg:text-5xl lg:leading-[64px] leading-[36px]",
   h2: "scroll-m-20 text-[22px] leading-[40px] lg:text-[32px] font-semibold text-primary-text lg:leading-[40px] tracking-tight transition-colors",
   h3: "scroll-m-20  text-lg leading-[26px] text-heading-text font-medium tracking-tight ",
-  p: "scroll-m-20 lg:text-[16px] text-sm  tracking-tight leading-[26px] text-[#888888]",
+  p: "scroll-m-20 lg:text-[16px] text-sm  tracking-tight leading-[26px] ",
   lead: "text-[16px] leading-[28px] lg:leading-[34px] lg:text-lg text-secondary-text",
   muted: "text-sm lg:text-[15px] text-light-text font-normal leading-[26px]",
   normal: "text-secondary-text",

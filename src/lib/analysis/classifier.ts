@@ -21,6 +21,7 @@ import {
 export const classifyActivity = (
   repos: INormalizedRepo[],
   stats: IRepoStats,
+  commitsLast30Days = 0,
 ): IActivityClassification => {
   const owned = repos.filter((r) => !r.isFork);
 
@@ -32,17 +33,23 @@ export const classifyActivity = (
   let level: ActivityLevel;
   let summary: string;
 
-  if (daysSinceLastPush <= 90 || stats.activeCount >= 3) {
+  if (
+    commitsLast30Days >= 10 ||
+    daysSinceLastPush <= 90 ||
+    stats.activeCount >= 3
+  ) {
     level = "Active";
     summary =
-      daysSinceLastPush === 0
-        ? "Pushed code today — highly active."
-        : daysSinceLastPush <= 7
-          ? `Last pushed ${daysSinceLastPush} day(s) ago — consistently active.`
-          : `Last pushed ${daysSinceLastPush} days ago with ${stats.activeCount} active repo(s).`;
-  } else if (daysSinceLastPush <= 365 || stats.activeCount >= 1) {
+      commitsLast30Days >= 10
+        ? `${commitsLast30Days} commits in the last 30 days — consistently active.`
+        : `Last pushed ${daysSinceLastPush} days ago with ${stats.activeCount} active repo(s).`;
+  } else if (
+    commitsLast30Days >= 1 ||
+    daysSinceLastPush <= 365 ||
+    stats.activeCount >= 1
+  ) {
     level = "Moderate";
-    summary = `Last pushed ${daysSinceLastPush} days ago. Periodic activity — not consistently coding publicly.`;
+    summary = `${commitsLast30Days > 0 ? `${commitsLast30Days} commit(s) in the last 30 days` : `Last pushed ${daysSinceLastPush} days ago`} — periodic activity.`;
   } else {
     level = "Inactive";
     summary =
@@ -127,28 +134,19 @@ export const classifyExperience = (
 
 //  Project Quality Classifier
 // Score per repo (0–100):
-//   README present    → +35
-//   License present   → +20
-//   Topics tagged     → +15
-//   Stars > 0         → +15 (capped, scaled)
-//   Pushed < 180 days → +15
-//
-// Overall = average of top-5 repo scores
 
 const scoreRepo = (repo: INormalizedRepo): number => {
   let score = 0;
 
-  if (repo.hasReadme) score += 35;
-  if (repo.hasLicense) score += 20;
-  if (repo.hasTopics) score += 15;
+  if (repo.hasReadme) score += 40;
+  if (repo.hasLicense) score += 15;
+  if (repo.hasTopics) score += 10;
+  if (repo.daysSinceLastPush <= 180) score += 20; // up from 15
 
-  // Star signal — diminishing returns, max +15
+  // Stars — diminishing returns, max +15
   if (repo.stars > 0) {
     score += Math.min(15, Math.round(Math.log2(repo.stars + 1) * 4));
   }
-
-  // Recency
-  if (repo.daysSinceLastPush <= 180) score += 15;
 
   return Math.min(score, 100);
 };
@@ -210,8 +208,9 @@ export const classifyCandidate = (
   profile: INormalizedProfile,
   repos: INormalizedRepo[],
   stats: IRepoStats,
+  commitsLast30Days = 0,
 ): ICandidateClassification => ({
-  activity: classifyActivity(repos, stats),
+  activity: classifyActivity(repos, stats, commitsLast30Days),
   collaboration: classifyCollaboration(stats),
   experience: classifyExperience(profile, stats),
   projectQuality: classifyProjectQuality(repos),

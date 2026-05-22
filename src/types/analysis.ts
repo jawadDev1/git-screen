@@ -104,6 +104,9 @@ export interface IGitHubEvent {
 
 export interface IActivitySummary {
   pushesLast30Days: number;
+  commitsLast90Days: number;
+  totalCommitsLastYear: number;
+  reposContributedTo: number;
   pushesLast90Days: number;
   pullRequestsOpened: number;
   issuesOpened: number;
@@ -160,4 +163,28 @@ export interface IAnalysisState {
   error: string | null;
   // Per-step completion flags — lets UI show checkmarks as steps finish
   completedSteps: Set<AnalysisStep>;
+}
+
+export interface IProfileData {
+  profile: INormalizedProfile;
+  score: ICandidateScore;
+  classification: ICandidateClassification;
+}
+
+export interface IReposData {
+  reposData: IFetchReposResult;
+  frameworkMap: IFrameworkMap;
+}
+
+export interface IActivityData {
+  activitySummary: IActivitySummary;
+}
+
+export interface IReportData {
+  jdMatch: IJDMatchResult | null;
+  report: IGeminiReport;
+}
+
+export interface IActionError {
+  error: string;
 }
