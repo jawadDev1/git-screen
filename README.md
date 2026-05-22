@@ -1,4 +1,4 @@
-# GitScreen
+# GitScreen - [Visit Website](https://git-screen.vercel.app)
 
 AI-powered GitHub candidate screener — paste a GitHub profile URL, get a structured recruiter report in seconds. Optionally paste a job description to generate a skill match score.
 
